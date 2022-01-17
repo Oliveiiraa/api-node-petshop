@@ -2,30 +2,41 @@ const Atendimento = require('../models/atendimentos')
 
 module.exports = app => {
   app.get('/atendimentos', (req, res) => {
-    return Atendimento.lista(res)
+    Atendimento.lista()
+      .then(atendimentos => res.json(atendimentos))
+      .catch(erro => res.status(500).json(erro))
   })
 
   app.get('/atendimentos/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    return Atendimento.unique(id, res)
+
+    Atendimento.unique(id)
+      .then(atendimento => res.json(atendimento))
+      .catch(erro => res.status(500).json(erro))
   })
 
   app.post('/atendimentos', (req, res) => {
     const atendimento = req.body;
 
-    return Atendimento.adiciona(atendimento, res)
+    Atendimento.adiciona(atendimento)
+      .then(atendimentoCadastrado => res.status(201).json(atendimentoCadastrado))
+      .catch(erro => res.status(400).json(erro))
   })
 
   app.patch('/atendimentos/:id', (req, res) => {
     const id = parseInt(req.params.id)
     const values = req.body
 
-    return Atendimento.update(id, values, res)
+    Atendimento.update(id, values)
+      .then(atendimentoAtualizado => res.json(atendimentoAtualizado))
+      .catch(erro => res.status(400).json(erro))
   })
 
   app.delete('/atendimentos/:id', (req, res) => {
     const id = parseInt(req.params.id)
 
-    return Atendimento.delete(id, res)
+    Atendimento.delete(id)
+      .then(atendimento => res.status(204).json(atendimento))
+      .catch(erro => res.status(400).json(erro))
   })
 };
