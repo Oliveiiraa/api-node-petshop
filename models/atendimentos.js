@@ -1,14 +1,13 @@
-const res = require('express/lib/response')
 const moment = require('moment')
 const connection = require('../infra/connection')
-
+const axios = require('axios')
 class Atendimento {
   adiciona(atendimento, res) {
     const dataCriacao = moment().format('YYYY-MM-DD HH:MM:ss')
     const data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:MM:ss')
 
     const dataValida = moment(data).isSameOrAfter(dataCriacao)
-    const clienteValido = atendimento.nome.length >= 5
+    const clienteValido = atendimento.cliente.length >= 5
 
     const validacoes = [
       {
@@ -55,11 +54,18 @@ class Atendimento {
   unique(id, res) {
     const sql = `SELECT * FROM Atendimentos where id=${id}`
 
-    connection.query(sql, (erro, resultado) => {
+    connection.query(sql, async (erro, resultado) => {
+      const atendimento = resultado[0]
+      const cpf = atendimento.cliente
+
       if (erro) {
         res.status(400).json(erro)
       } else {
-        res.status(200).json(resultado[0])
+        const { data } = await axios.get(`http://localhost:8082/${cpf}`)
+
+        atendimento.cliente = data;
+
+        res.status(200).json(atendimento)
       }
     })
   }
